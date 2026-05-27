@@ -28,11 +28,18 @@
 			<groupId>org.springframework.integration</groupId>
 			<artifactId>spring-integration-stream</artifactId>
 		</dependency>
-		<!-- Spring Integration 的MQTT 依赖包 -->
+		<!-- Spring Integration 的 MQTT 依赖包 -->
 		<dependency>
 			<groupId>org.springframework.integration</groupId>
 			<artifactId>spring-integration-mqtt</artifactId>
 		</dependency>
+
+		<!-- 新版本需要手动添加 MQTT v3 客户端依赖 -->
+		<dependency>
+			<groupId>org.eclipse.paho</groupId>
+			<artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+		</dependency>
+
 		<!-- SpringBoot 整合 Spring Integration 依赖包 -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
