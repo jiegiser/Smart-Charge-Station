@@ -32,4 +32,4 @@ build/
 ### VS Code ###
 .vscode/
 
-application.txt
+charge-demo/src/main/resources/application.js
