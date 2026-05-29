@@ -54,8 +54,8 @@
 
 		<!--
         SpringBoot 整合 WebSocket
-        1. 基于Tomcat @ServerEndpoint 注解实现
-        2. 基于 Spring封装的注解
+        1. 基于 Tomcat @ServerEndpoint 注解实现
+        2. 基于 Spring 封装的注解
         -->
 
 		<!-- websocket -->

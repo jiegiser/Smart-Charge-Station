@@ -9,11 +9,11 @@
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <!-- Demo模块 -->
+        <!-- Demo 模块 -->
         <module>charge-demo</module>
-        <!-- Netty服务端模块(与小程序通信)  -->
+        <!-- Netty 服务端模块(与小程序通信)  -->
         <!-- <module>charge-netty-server</module> -->
-        <!-- mqtt客户端模块(与EMQX通信) -->
+        <!-- mqtt客户端模块(与 EMQX 通信) -->
         <!-- <module>charge-mqtt-client</module> -->
         <!-- 通信协议模块(私有协议) -->
         <!-- <module>charge-protocol</module> -->
@@ -46,7 +46,7 @@
 
     <!-- 全局导入 -->
     <dependencies>
-        <!-- 简化Java代码 -->
+        <!-- 简化 Java 代码 -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -68,8 +68,8 @@
             <!-- SpringBoot -->
             <!--
             SpringBoot 导入的2种方式：
-            1. 引入spring-boot-starter-parent ( <parent></parent> )
-            2. 引入spring-boot-dependencies  ( <dependency></dependency> )
+            1. 引入 spring-boot-starter-parent ( <parent></parent> )
+            2. 引入 spring-boot-dependencies  ( <dependency></dependency> )
         -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -85,7 +85,7 @@
                 Spring Integration 是 Spring 针对信息流的抽象 ( 消息传递的规范 )
                 支持 MQTT,Mail,AMQP 协议
 
-                Spring Integration实现mqtt客户端所使用类库：
+                Spring Integration 实现 mqtt 客户端所使用类库：
                 eclipse.paho.client.mqttV3
              -->
 
@@ -95,13 +95,13 @@
                 <artifactId>spring-integration-core</artifactId>
                 <version>${spring.integration.version}</version>
             </dependency>
-            <!--Spring Integration 流支持依赖包  -->
+            <!-- Spring Integration 流支持依赖包  -->
             <dependency>
                 <groupId>org.springframework.integration</groupId>
                 <artifactId>spring-integration-stream</artifactId>
                 <version>${spring.integration.version}</version>
             </dependency>
-            <!-- Spring Integration 的MQTT 依赖包 -->
+            <!-- Spring Integration 的 MQTT 依赖包 -->
             <dependency>
                 <groupId>org.springframework.integration</groupId>
                 <artifactId>spring-integration-mqtt</artifactId>
