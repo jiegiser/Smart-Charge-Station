@@ -19,8 +19,8 @@ mqtt:
   # 订阅主题
   topic: io_test
   options:
-    # MQTT服务器用户名
-    # 项目emqx连接没有设用户名
+    # MQTT 服务器用户名
+    # 项目 emqx 连接没有设用户名
     user_name: 234234
     # MQTT 服务器密码
     # 项目 emqx 连接没有设密码
