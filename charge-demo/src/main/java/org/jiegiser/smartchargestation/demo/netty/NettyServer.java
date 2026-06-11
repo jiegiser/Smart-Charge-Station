@@ -7,15 +7,29 @@ package org.jiegiser.smartchargestation.demo.netty;
  */
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import jakarta.annotation.PreDestroy;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
-public class NettyServer {
+@Component
+@Order(1)
+@Slf4j
+public class NettyServer implements CommandLineRunner {
+    private NioEventLoopGroup bossGroup;
+    private NioEventLoopGroup workerGroup;
+    private Channel channel;
+
+    @Value("${Netty.server.port}")
+    private int port;
+
     /**
-     * 初始化 Netty 组件
+     * Netty 服务器启动
      */
     public void start() {
         /**
@@ -29,9 +43,9 @@ public class NettyServer {
          */
 
         // 处理网络请求
-        NioEventLoopGroup bossGroup = new NioEventLoopGroup();
+        bossGroup = new NioEventLoopGroup();
         // 处理网络 IO
-        NioEventLoopGroup workerGroup = new NioEventLoopGroup();
+        workerGroup = new NioEventLoopGroup();
 
         /**
          * ServerBootstrap：引导类，负责初始化 Netty 服务端组件，ServerBootstrap对象起到的作用：
@@ -58,8 +72,7 @@ public class NettyServer {
                  * option：设置通道选项，用于配置服务器端通道的参数
                  * SO_RCVBUF：设置接收缓冲区大小
                  * 设置指定大小的接收缓冲区（TCP）
-                 */
-                .option(ChannelOption.SO_RCVBUF, 3)
+                 */.option(ChannelOption.SO_RCVBUF, 3)
                 /**
                  * 将 ChannelHandler 添加上 ChannelPipeline
                  * childHandler：设置通道处理器，用于处理业务逻辑
@@ -89,5 +102,59 @@ public class NettyServer {
                                 .addLast();
                     }
                 });
+
+        /*
+         * Netty 所有操作都是异步的
+         * 会返回 Future 对象
+         * 可以利用这个对象可以实现异步操作的通知
+         *
+         **/
+        ChannelFuture feature = null;
+        try {
+            // 绑定端口，启动服务器；sync() 方法会阻塞，直到绑定成功
+            feature = serverBootstrap.bind(port).sync();
+            log.info(">>>>> Netty 服务器监听的端口：{}", port);
+            if (feature.isSuccess()) {
+                log.info(">>>>> Netty 服务器启动成功");
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            log.info(">>>>>Netty 服务端关闭....");
+            // 优雅关闭组件
+            // if (bossGroup !=null) {
+            //     bossGroup.shutdownGracefully();
+            // }
+            // if (workerGroup != null) {
+            //     workerGroup.shutdownGracefully();
+            // }
+            // if (channel != null) {
+            //     channel.closeFuture();
+            // }
+            destory();
+        }
+    }
+
+    /**
+     * PreDestroy 的作用：对象销毁之前会执行 @PreDestroy 所修饰的方法
+     * Netty 关闭
+     */
+    @PreDestroy
+    public void destory() {
+        try {
+            if (bossGroup != null)
+                bossGroup.shutdownGracefully().sync();
+            if (workerGroup != null)
+                workerGroup.shutdownGracefully().sync();
+            if (channel != null)
+                channel.closeFuture().syncUninterruptibly();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+
     }
 }
