@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -72,7 +73,8 @@ public class NettyServer implements CommandLineRunner {
                  * option：设置通道选项，用于配置服务器端通道的参数
                  * SO_RCVBUF：设置接收缓冲区大小
                  * 设置指定大小的接收缓冲区（TCP）
-                 */.option(ChannelOption.SO_RCVBUF, 3)
+                 */
+                .option(ChannelOption.SO_RCVBUF, 3)
                 /**
                  * 将 ChannelHandler 添加上 ChannelPipeline
                  * childHandler：设置通道处理器，用于处理业务逻辑
@@ -109,14 +111,23 @@ public class NettyServer implements CommandLineRunner {
          * 可以利用这个对象可以实现异步操作的通知
          *
          **/
-        ChannelFuture feature = null;
+        ChannelFuture future = null;
         try {
             // 绑定端口，启动服务器；sync() 方法会阻塞，直到绑定成功
-            feature = serverBootstrap.bind(port).sync();
+            future = serverBootstrap.bind(port).sync();
             log.info(">>>>> Netty 服务器监听的端口：{}", port);
-            if (feature.isSuccess()) {
+            if (future.isSuccess()) {
                 log.info(">>>>> Netty 服务器启动成功");
             }
+
+            /**
+             * closeFuture()：返回一个 ChannelFuture 对象，表示通道关闭的 Future
+             * closeFuture().sync() 也是阻塞方法，直到通道关闭
+             * 这个阻塞方法起到的作用：
+             * 1. 将 Netty 服务端的线程设置 wait 状态，那么 SpringBoot 的主线程就不会进入到 finally
+             * 2. 执行 Netty 服务端关闭的代码
+             */
+            future.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
@@ -153,8 +164,14 @@ public class NettyServer implements CommandLineRunner {
         }
     }
 
+    /**
+     * Netty Server 以另一个线程启动
+     * @param args 启动参数
+     * @throws Exception
+     */
+    @Async
     @Override
     public void run(String... args) throws Exception {
-
+        start();
     }
 }
