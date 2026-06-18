@@ -142,7 +142,7 @@ public class NettyServer implements CommandLineRunner {
             // if (channel != null) {
             //     channel.closeFuture();
             // }
-            destory();
+            destroy();
         }
     }
 
@@ -151,7 +151,7 @@ public class NettyServer implements CommandLineRunner {
      * Netty 关闭
      */
     @PreDestroy
-    public void destory() {
+    public void destroy() {
         try {
             if (bossGroup != null)
                 bossGroup.shutdownGracefully().sync();
