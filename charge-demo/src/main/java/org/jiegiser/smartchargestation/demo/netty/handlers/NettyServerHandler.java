@@ -12,6 +12,8 @@ import io.netty.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
 import io.netty.channel.*;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * 自定义入站处理器，是不会直接实现 ChannelInboundHandler
  * 通常有 2 种方法：
@@ -32,7 +34,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
      */
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-        log.info(">>>>>SimpleChannelInboundHandler有新的客户端连接：" + ctx.channel().id().asLongText());
+        log.info(">>>>> SimpleChannelInboundHandler 有新的客户端连接：" + ctx.channel().id().asLongText());
     }
 
     @Override
@@ -51,8 +53,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
          * ChannelHandler 由 Context 进行管理
          * Context 提供了 Channel, ChannelPipeline, 用于进行 I/O 操作, 以及获取上下文信息
          */
-        String message = msg.toString(CharsetUtil.UTF_8);
-        log.info("Received data: {}", message);
+        String message = msg.toString(StandardCharsets.UTF_8);
+        log.info(">>>>> SimpleChannelInboundHandler 收到的消息: {}", message);
 
         /**
          * fireChannelRead 将消息传递下一个处理器，
