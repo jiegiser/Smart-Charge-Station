@@ -10,10 +10,12 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -21,18 +23,45 @@ import org.springframework.stereotype.Component;
 @Component
 @Order(1)
 @Slf4j
-public class NettyServer implements CommandLineRunner {
+public class NettyServer implements CommandLineRunner, SmartLifecycle {
     private NioEventLoopGroup bossGroup;
     private NioEventLoopGroup workerGroup;
     private Channel channel;
+    private boolean running = false;
 
+    /**
+     * 1. 没有加上 @Component
+     * 2. 变量是 static 类型
+     */
     @Value("${Netty.server.port}")
     private int port;
+
+
+    /**
+     * 初始化 Netty 服务器
+     * {@code @PostConstruct:}
+     * Spring 容器在实例化一个对象，会第一个执行的方法
+     */
+    // @Async
+    // @PostConstruct
+    // public void init() {
+    //     startNetty();
+    // }
+    @Override
+    public void start() {
+        try {
+            startNetty();
+            running = true;
+        } catch (Exception e) {
+            log.error("Netty 服务器启动失败，但不影响主服务", e);
+            // throw new RuntimeException(e);
+        }
+    }
 
     /**
      * Netty 服务器启动
      */
-    public void start() {
+    public void startNetty() {
         /**
          * Netty 对于 NIO（主从 Reactor 模型）的深度封装
          * 1. NioEventLoop：事件循环，负责处理连接、读、写等事件；----> 网络指挥官
@@ -113,6 +142,12 @@ public class NettyServer implements CommandLineRunner {
          **/
         ChannelFuture future = null;
         try {
+            /**
+             * bind(port).sync() 是阻塞方法，
+             * 但是这个阻塞只是短暂的，
+             * 它只是阻塞了 Netty 服务端的初始化的期间
+             * Netty 服务端的初始化完成，这个阻塞方法就完成了
+             */
             // 绑定端口，启动服务器；sync() 方法会阻塞，直到绑定成功
             future = serverBootstrap.bind(port).sync();
             log.info(">>>>> Netty 服务器监听的端口：{}", port);
@@ -124,8 +159,7 @@ public class NettyServer implements CommandLineRunner {
              * closeFuture()：返回一个 ChannelFuture 对象，表示通道关闭的 Future
              * closeFuture().sync() 也是阻塞方法，直到通道关闭
              * 这个阻塞方法起到的作用：
-             * 1. 将 Netty 服务端的线程设置 wait 状态，那么 SpringBoot 的主线程就不会进入到 finally
-             * 2. 执行 Netty 服务端关闭的代码
+             * 将 Netty 服务端的线程设置 wait 状态，那么 SpringBoot 的主线程就不会进入到 finally 执行 Netty 服务端关闭的代码
              */
             future.channel().closeFuture().sync();
         } catch (InterruptedException e) {
@@ -145,6 +179,22 @@ public class NettyServer implements CommandLineRunner {
             destroy();
         }
     }
+
+    @Override
+    public void stop() {
+        destroy();
+        running = false;
+        log.info(">>>>> Netty 服务端已关闭....");
+
+    }
+
+    @Override
+    public boolean isRunning() {
+        return running;
+    }
+
+    @Override
+    public int getPhase() { return Integer.MAX_VALUE; } // 最后启动，确保 Netty 服务器启动完成
 
     /**
      * PreDestroy 的作用：对象销毁之前会执行 @PreDestroy 所修饰的方法
