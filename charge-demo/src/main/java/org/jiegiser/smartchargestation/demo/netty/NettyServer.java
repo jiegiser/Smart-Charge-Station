@@ -13,9 +13,10 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
+import org.jiegiser.smartchargestation.demo.netty.handlers.NettyServerHandler;
+import org.jiegiser.smartchargestation.demo.netty.handlers.ServerHandlerAdapter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.SmartLifecycle;
 import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -23,11 +24,10 @@ import org.springframework.stereotype.Component;
 @Component
 @Order(1)
 @Slf4j
-public class NettyServer implements CommandLineRunner, SmartLifecycle {
+public class NettyServer implements CommandLineRunner {
     private NioEventLoopGroup bossGroup;
     private NioEventLoopGroup workerGroup;
     private Channel channel;
-    private boolean running = false;
 
     /**
      * 1. 没有加上 @Component
@@ -45,23 +45,13 @@ public class NettyServer implements CommandLineRunner, SmartLifecycle {
     // @Async
     // @PostConstruct
     // public void init() {
-    //     startNetty();
+    //     start();
     // }
-    @Override
-    public void start() {
-        try {
-            startNetty();
-            running = true;
-        } catch (Exception e) {
-            log.error("Netty 服务器启动失败，但不影响主服务", e);
-            // throw new RuntimeException(e);
-        }
-    }
 
     /**
      * Netty 服务器启动
      */
-    public void startNetty() {
+    public void start() {
         /**
          * Netty 对于 NIO（主从 Reactor 模型）的深度封装
          * 1. NioEventLoop：事件循环，负责处理连接、读、写等事件；----> 网络指挥官
@@ -130,7 +120,8 @@ public class NettyServer implements CommandLineRunner, SmartLifecycle {
                          */
                         pipeline
                                 // 添加处理器
-                                .addLast();
+                                .addLast(new NettyServerHandler())
+                                .addLast(new ServerHandlerAdapter());
                     }
                 });
 
@@ -179,22 +170,6 @@ public class NettyServer implements CommandLineRunner, SmartLifecycle {
             destroy();
         }
     }
-
-    @Override
-    public void stop() {
-        destroy();
-        running = false;
-        log.info(">>>>> Netty 服务端已关闭....");
-
-    }
-
-    @Override
-    public boolean isRunning() {
-        return running;
-    }
-
-    @Override
-    public int getPhase() { return Integer.MAX_VALUE; } // 最后启动，确保 Netty 服务器启动完成
 
     /**
      * PreDestroy 的作用：对象销毁之前会执行 @PreDestroy 所修饰的方法
