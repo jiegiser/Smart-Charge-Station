@@ -12,7 +12,7 @@
         <!-- Demo 模块 -->
         <module>charge-demo</module>
         <!-- Netty 服务端模块(与小程序通信)  -->
-        <!-- <module>charge-netty-server</module> -->
+        <module>charge-netty-server</module>
         <!-- mqtt客户端模块(与 EMQX 通信) -->
         <!-- <module>charge-mqtt-client</module> -->
         <!-- 通信协议模块(私有协议) -->
@@ -42,6 +42,10 @@
         <lombok.version>1.18.42</lombok.version>
         <!-- protobuf 版本 -->
         <protobuf-java-util.version>4.28.3</protobuf-java-util.version>
+        <!-- okhttp 版本 -->
+        <okhttp.version>4.9.3</okhttp.version>
+        <!-- fastjson2 版本 -->
+        <fastjson.version>2.0.33</fastjson.version>
     </properties>
 
     <!-- 全局导入 -->
@@ -142,6 +146,20 @@
                 <version>${iotdb.version}</version>
             </dependency>
 
+
+            <!-- OkHttp 是一个功能强大、高性能的 HTTP 客户端库 -->
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>${okhttp.version}</version>
+            </dependency>
+
+            <!-- json2 -->
+            <dependency>
+                <groupId>com.alibaba.fastjson2</groupId>
+                <artifactId>fastjson2</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
