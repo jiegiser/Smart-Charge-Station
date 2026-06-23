@@ -12,6 +12,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
+import org.jiegiser.smartchargestation.demo.netty.handlers.NettyClientHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
@@ -124,7 +125,7 @@ public class NettyClient implements CommandLineRunner {
                          */
                         pipeline
                                 // 添加处理器
-                                .addLast();
+                                .addLast(new NettyClientHandler());
                     }
                 });
 

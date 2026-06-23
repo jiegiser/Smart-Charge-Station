@@ -117,6 +117,7 @@ public class NettyServer implements CommandLineRunner {
                          * 真正进行业务逻辑处理
                          *
                          * 对于处理入站事件，处理器的执行顺序是按照添加到 ChannelPipeline 的顺序执行
+                         * 按照添加的顺序进行执行
                          */
                         pipeline
                                 // 添加处理器
