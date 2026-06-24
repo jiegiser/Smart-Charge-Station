@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
  *
  * SimpleChannelInboundHandler 比 ChannelInboundHandlerAdapter：
  * 1. SimpleChannelInboundHandler 提供了泛型, 无需进行类型转换；
- * 2. 消息的释放, SimpleChannelInboundHandler 自动的释放引用计数对象,而 ChannelInboundHandlerAdapter 不会自动释放；
+ * 2. 消息的释放, SimpleChannelInboundHandler 自动的释放引用计数对象，而 ChannelInboundHandlerAdapter 不会自动释放；
  *
  */
 @Slf4j
@@ -65,8 +65,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
          * 如果处理器是最后一个处理器,
          * 就不要调用 fireChannelRead()
          */
-        // 将消息传递给下一个处理器
-        // ctx.fireChannelRead(message);
+        // 将消息传递给下一个处理器，如果是最后一个处理器，则不调用
+        // ctx.fireChannelRead(msg);
 
 
         /**
@@ -77,11 +77,10 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
          * 而不是垃圾回收器管理
          * 特别是对于 ByteBuf 对象,
          * ByteBuf 对象使用引用计数, 去提高内存分配和内存释放的性能
-         *、
+         *
          * 释放 ByteBuf 对象,
          * 1. 可以使用 release();
          * 2. ReferenceCountUtil.release()
-         *
          * ReferenceCountUtil.release() 是 release() 的包装
          *
          *
@@ -90,6 +89,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
          * 2. 原 ByteBuf 经过处理产生了新的 ByteBuf, 原来的 ByteBuf 要释放
          * 3. 在最后的处理器, ByteBuf 要释放
          */
-        msg.release(); // 释放消息，避免内存泄漏
+        // 可以自动释放，不需要手动释放
+        // msg.release(); // 释放消息，避免内存泄漏
     }
 }

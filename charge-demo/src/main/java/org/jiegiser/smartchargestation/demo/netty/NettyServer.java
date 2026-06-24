@@ -121,8 +121,8 @@ public class NettyServer implements CommandLineRunner {
                          */
                         pipeline
                                 // 添加处理器
-                                .addLast(new NettyServerHandler())
-                                .addLast(new ServerHandlerAdapter());
+                                .addLast(new ServerHandlerAdapter())
+                                .addLast(new NettyServerHandler());
                     }
                 });
 

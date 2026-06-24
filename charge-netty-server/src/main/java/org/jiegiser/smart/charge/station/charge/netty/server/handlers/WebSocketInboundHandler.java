@@ -121,7 +121,7 @@ public class WebSocketInboundHandler extends SimpleChannelInboundHandler<WebSock
             if (messageLength > 0 && messageLength <= 200) {
                 log.debug(">>>>> 消息内容: {}", message);
             } else if (messageLength > 200) {
-                log.debug(">>>>> 消息内容过长({}字符)，仅显示前50字符: {}", messageLength, message.substring(0, 50) + "...");
+                log.debug(">>>>> 消息内容过长({}字符)，仅显示前 50 字符: {}", messageLength, message.substring(0, 50) + "...");
             }
 
             // 回显消息
