@@ -10,8 +10,10 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.string.StringEncoder;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
+import org.jiegiser.smartchargestation.demo.netty.handlers.ClientPkgHandler;
 import org.jiegiser.smartchargestation.demo.netty.handlers.NettyClientHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -124,8 +126,12 @@ public class NettyClient implements CommandLineRunner {
                          * 对于处理入站事件，处理器的执行顺序是按照添加到 ChannelPipeline 的顺序执行
                          */
                         pipeline
+                                // 字符串编码器
+                                .addLast(new StringEncoder())
                                 // 添加处理器
-                                .addLast(new NettyClientHandler());
+                                // .addLast(new NettyClientHandler());
+                                // 粘包半包场景复现处理器
+                                .addLast(new ClientPkgHandler());
                     }
                 });
 

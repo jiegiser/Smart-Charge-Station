@@ -10,11 +10,13 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.string.StringDecoder;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.jiegiser.smartchargestation.demo.netty.handlers.NettyServerHandler;
 import org.jiegiser.smartchargestation.demo.netty.handlers.ServerHandlerAdapter;
+import org.jiegiser.smartchargestation.demo.netty.handlers.ServerPkgHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
@@ -91,7 +93,7 @@ public class NettyServer implements CommandLineRunner {
                 /**
                  * option：设置通道选项，用于配置服务器端通道的参数
                  * SO_RCVBUF：设置接收缓冲区大小
-                 * 设置指定大小的接收缓冲区（TCP）
+                 * 设置指定大小的接收缓冲区（TCP）- 这里设置会影响粘包半包的复现
                  */
                 .option(ChannelOption.SO_RCVBUF, 3)
                 /**
@@ -120,9 +122,13 @@ public class NettyServer implements CommandLineRunner {
                          * 按照添加的顺序进行执行
                          */
                         pipeline
+                                // 字符串解码器
+                                .addLast(new StringDecoder())
                                 // 添加处理器
-                                .addLast(new ServerHandlerAdapter())
-                                .addLast(new NettyServerHandler());
+                                // .addLast(new ServerHandlerAdapter())
+                                // .addLast(new NettyServerHandler());
+                                // 粘包半包场景复现
+                                .addLast(new ServerPkgHandler());
                     }
                 });
 
