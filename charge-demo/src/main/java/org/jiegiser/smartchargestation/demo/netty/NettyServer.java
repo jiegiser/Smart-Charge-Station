@@ -7,9 +7,13 @@ package org.jiegiser.smartchargestation.demo.netty;
  */
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.FixedLengthFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -121,7 +125,15 @@ public class NettyServer implements CommandLineRunner {
                          * 对于处理入站事件，处理器的执行顺序是按照添加到 ChannelPipeline 的顺序执行
                          * 按照添加的顺序进行执行
                          */
+                        // 设置数据包边界
+                        ByteBuf delimiter = Unpooled.copiedBuffer("$_".getBytes());
                         pipeline
+                                //===== 解决粘包半包方案 2: 添加数据包边界 =====//
+                                .addLast(new DelimiterBasedFrameDecoder(1024, delimiter))
+
+                                // ===== 解决粘包半包方案 1: 数据包长度固定 ===== //
+                                //服务端接收的数据包长度固定为 13 个字符
+                                // .addLast(new FixedLengthFrameDecoder(13))
                                 // 字符串解码器
                                 .addLast(new StringDecoder())
                                 // 添加处理器
