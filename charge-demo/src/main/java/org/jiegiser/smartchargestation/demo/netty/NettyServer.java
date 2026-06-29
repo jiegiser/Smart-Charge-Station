@@ -14,6 +14,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.FixedLengthFrameDecoder;
+import io.netty.handler.codec.protobuf.ProtobufDecoder;
+import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -21,6 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.jiegiser.smartchargestation.demo.netty.handlers.NettyServerHandler;
 import org.jiegiser.smartchargestation.demo.netty.handlers.ServerHandlerAdapter;
 import org.jiegiser.smartchargestation.demo.netty.handlers.ServerPkgHandler;
+import org.jiegiser.smartchargestation.demo.netty.handlers.ServerProtobufHandler;
+import org.jiegiser.smartchargestation.demo.protobuf.UserProtobuf;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
@@ -129,18 +133,26 @@ public class NettyServer implements CommandLineRunner {
                         ByteBuf delimiter = Unpooled.copiedBuffer("$_".getBytes());
                         pipeline
                                 //===== 解决粘包半包方案 2: 添加数据包边界 =====//
-                                .addLast(new DelimiterBasedFrameDecoder(1024, delimiter))
+                                // .addLast(new DelimiterBasedFrameDecoder(1024, delimiter))
 
                                 // ===== 解决粘包半包方案 1: 数据包长度固定 ===== //
                                 //服务端接收的数据包长度固定为 13 个字符
                                 // .addLast(new FixedLengthFrameDecoder(13))
                                 // 字符串解码器
-                                .addLast(new StringDecoder())
+                                // .addLast(new StringDecoder())
                                 // 添加处理器
                                 // .addLast(new ServerHandlerAdapter())
                                 // .addLast(new NettyServerHandler());
                                 // 粘包半包场景复现
-                                .addLast(new ServerPkgHandler());
+                                // .addLast(new ServerPkgHandler());
+
+                                //===== 解决粘包半包方案 3: Protobuf 序列 =====//
+                                // 取出 Protobuf 消息实例的数据包的包头的包长度
+                                .addLast(new ProtobufVarint32FrameDecoder())
+                                // Protobuf 解码器
+                                .addLast(new ProtobufDecoder(UserProtobuf.User.getDefaultInstance()))
+                                // Protobuf 消息实例接收
+                                .addLast(new ServerProtobufHandler());
                     }
                 });
 

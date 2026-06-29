@@ -14,10 +14,13 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.FixedLengthFrameDecoder;
+import io.netty.handler.codec.protobuf.ProtobufEncoder;
+import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.codec.string.StringEncoder;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.jiegiser.smartchargestation.demo.netty.handlers.ClientPkgHandler;
+import org.jiegiser.smartchargestation.demo.netty.handlers.ClientProtobufHandler;
 import org.jiegiser.smartchargestation.demo.netty.handlers.NettyClientHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -133,18 +136,27 @@ public class NettyClient implements CommandLineRunner {
                         ByteBuf delimiter = Unpooled.copiedBuffer("$_".getBytes());
                         pipeline
                                 // 解决粘包半包: 添加数据包边界
-                                .addLast(new DelimiterBasedFrameDecoder(1024, delimiter))
+                                // .addLast(new DelimiterBasedFrameDecoder(1024, delimiter))
 
                                 // 解决粘包半包: 固定数据包长度
                                 // 客户端发送的数据包的长度固定为 13 个字符
                                 // .addLast(new FixedLengthFrameDecoder(13))
 
                                 // 字符串编码器
-                                .addLast(new StringEncoder())
+                                // .addLast(new StringEncoder())
                                 // 添加处理器
                                 // .addLast(new NettyClientHandler());
                                 // 粘包半包场景复现处理器
-                                .addLast(new ClientPkgHandler());
+                                // .addLast(new ClientPkgHandler());
+
+
+                                // Protobuf 解决粘包半包错误
+                                // 为 Protobuf 消息实例添加了一个包头，包头是包含了数据包的长度
+                                .addLast(new ProtobufVarint32LengthFieldPrepender())
+                                // Protobuf 编码器
+                                .addLast(new ProtobufEncoder())
+                                // Protobuf 消息实例
+                                .addLast(new ClientProtobufHandler());
                     }
                 });
 
